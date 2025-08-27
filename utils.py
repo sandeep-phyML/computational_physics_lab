@@ -44,4 +44,19 @@ def gauss_jordan(A, B):
                 ]
     # return ,  X 
     return [row[-1] for row in aug_matrix]
-
+def LU_decompose(A):
+    for row_index in range(len(A)):
+        for col_index in range(len(A)):
+            if row_index == 0:
+                pass
+                #print("first row" ,A[row_index][col_index])
+            else :
+                if row_index > col_index :
+                    #print(f" L matrix , computation with row index {  row_index} and col index { col_index}")
+                    A[row_index][col_index] = (A[row_index][col_index] - sum([A[row_index][s_]*A[s_][col_index] for s_ in range(col_index)]))/A[col_index][col_index]
+                    #print(f"Updated matrix element is {A[row_index][col_index]}")
+                else:
+                    #print(f" U matrix , computation with row index {row_index} and col index {col_index}")
+                    A[row_index][col_index] = A[row_index][col_index] - sum([A[row_index][s_]*A[s_][col_index] for s_ in range(row_index)])
+                    #print(f"Updated matrix element is {A[row_index][col_index]}")
+    return A 
