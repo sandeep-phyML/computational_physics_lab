@@ -1,6 +1,46 @@
 import os 
 import sys
+import numpy as np
 
+def Jacobi_iterative(A,b,intial_guess,epsilon):
+    n = len(A)
+    iter_ = 0.0
+    while True:
+        new_x = [(1.0/A[i][i])*(b[i] - sum([A[i][j]*intial_guess[j] if i!=j else 0 for j in range(n)])) for i in range(n)]
+        distance = np.sqrt(sum([(new_x[i]-intial_guess[i])**2 for i in range(n)]))
+        if distance < epsilon:
+            print(iter_)
+            return new_x
+        else :
+            intial_guess = new_x
+            iter_ += 1.0
+        
+def Chol_decomp(A):
+    n = len(A)
+    L = [[0 for _ in range(n)] for _ in range(n)]
+    for row_index in range(n):
+        for col_index in range(row_index,n):
+            if row_index == col_index :
+                L[row_index][col_index] = np.sqrt(A[row_index][col_index] - sum([L[row_index][j]**2 for j in range(row_index)]))
+            else :
+                L[row_index][col_index] = (1/L[row_index][row_index] ) *(A[row_index][col_index] - sum(L[row_index][k]*L[k][col_index] for k in range(row_index)))
+                L[col_index][row_index] = L[row_index][col_index]
+    return L
+def forward_substitution(L,b):
+    # inputs are the cholesky decomposed L (L and L* together ) and the b array and returns y 
+    n = len(b)
+    y = [0 for _ in range(n)]
+    for row_index in range(n):
+        y[row_index] =( b[row_index] - sum([L[row_index][s_]*y[s_] for s_ in range(0,row_index)]) ) / L[row_index][row_index]
+    return y
+def backward_substituion(L,y):
+    # inputs are the cholesky decomposed L (L and L* together ) and the y array and returns the solution x 
+    n = len(y)
+    x = [0 for _ in range(n)]
+    for row_index in range(n):
+        #x_matrix[i] =( y_matrix[i] - sum([LU_matrix[i][s_]*x_matrix[s_] for s_ in range(0,i)]) ) 
+        x[-row_index-1] =( y[-row_index-1] - sum([L[-row_index-1][s_]*x[s_] for s_ in range(-row_index,0)]) ) / L[-row_index-1][-row_index-1]
+    return x
 
 def read_matrix(filename):
     with open(filename, 'r') as f:
