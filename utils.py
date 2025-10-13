@@ -100,3 +100,28 @@ def LU_decompose(A):
                     A[row_index][col_index] = A[row_index][col_index] - sum([A[row_index][s_]*A[s_][col_index] for s_ in range(row_index)])
                     #print(f"Updated matrix element is {A[row_index][col_index]}")
     return A 
+
+def Midpoint(f,N,a,b,I_true = None):
+    h = (b-a)/N
+    x_array = []
+    fact = 1
+    for i in range(N):
+        x_element = a + fact* h/2
+        x_array.append(x_element)
+        fact += 2.0
+    I = sum([h*f(item) for item in x_array])
+    if I_true:
+        print(f"midpoint result for N = {N}:computed value: { I },error : {abs(I_true-I)/I_true * 100}")
+        return I , abs(I_true-I)/I_true * 100
+    else :
+        return I
+
+
+def Trapezoidal(f,N,a,b,I_true = None):
+    h = (b-a)/N
+    I = sum([(h/2.0)*(f(a+i*h)+f(a+(i+1)*h)) for i in range(N)])
+    if I_true:
+        print(f"Trapezoidal result for N = {N}:computed value: { I },error : {abs(I_true-I)/I_true * 100}")
+        return I , abs(I_true-I)/I_true * 100
+    else :
+        return I 
