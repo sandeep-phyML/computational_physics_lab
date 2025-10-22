@@ -125,3 +125,53 @@ def Trapezoidal(f,N,a,b,I_true = None):
         return I , abs(I_true-I)/I_true * 100
     else :
         return I 
+
+def sim_1_third(f,a,b,N):
+    h = (b-a)/N
+    int_sum = 0.0
+    x = a
+    for i in range(N+1):
+        if i == 0 or i == N :
+            int_sum += f(x)
+        elif i % 2 == 0 :
+            int_sum += 2.0 * f(x)
+        elif i % 2 == 1 :
+            int_sum += 4.0 * f(x)
+        x += h
+    return h/3.0 * int_sum
+
+def Gaussian_Quad(f,a,b,roots,weights):
+    result = 0.0
+    for i in range(len(roots)):
+        result += f(roots[i],a,b) * weights[i]
+    result = result * (b-a)/2
+    return result
+
+def find_int_Gaussian_Quad(f,a,b,f_true,Gaussian_Quad,epsilon=1e-8, n_max = 30):
+    for i in range(n_max):
+        roots , weights = np.polynomial.legendre.leggauss(i+1)
+        result = Gaussian_Quad(f,a,b,roots,weights)
+        if abs(result-f_true) <= epsilon :
+            print(f"The estimated value is : {result}, for n : {i+1}")
+            break 
+
+def Forward(a,b,h,f,y_a):
+    y_s = [y_a]
+    x_s = [a]
+    while True:
+        y_s.append(y_s[-1] + h * f(y_s[-1],x_s[-1]) )
+        x_s.append(x_s[-1]+h)
+        if x_s[-1] >= b:
+            break
+    return x_s ,y_s
+def Predictor_corrector(a,b,h,f,y_a):
+    y_s = [y_a]
+    x_s = [a]
+    while True:
+        k1 = h * f(y_s[-1],x_s[-1])
+        k2 = h * f(y_s[-1]+k1,x_s[-1]+h)
+        y_s.append(y_s[-1] + (k1+k2)/2.0 )
+        x_s.append(x_s[-1]+h)
+        if x_s[-1] >= b:
+            break
+    return x_s ,y_s
