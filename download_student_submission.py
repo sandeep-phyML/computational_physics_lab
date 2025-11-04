@@ -1,4 +1,3 @@
-import os
 import re
 import requests
 from googleapiclient.discovery import build
@@ -6,7 +5,8 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.errors import HttpError
-
+from googleapiclient.http import MediaIoBaseDownload
+import io, os
 # Required scopes
 SCOPES = [
     "https://www.googleapis.com/auth/classroom.courses.readonly",
@@ -18,16 +18,16 @@ SCOPES = [
 
 def get_service(api_name, api_version, scopes):
     creds = None
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", scopes)
+    if os.path.exists("APICredentials/token.json"):
+        creds = Credentials.from_authorized_user_file("APICredentials/token.json", scopes)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                "classroom_credentials.json", scopes)
+                "APICredentials/classroom_credentials.json", scopes)
             creds = flow.run_local_server(port=0)
-        with open("token.json", "w") as token:
+        with open("APICredentials/token.json", "w") as token:
             token.write(creds.to_json())
     service = build(api_name, api_version, credentials=creds)
     return service, creds
@@ -61,25 +61,21 @@ def list_assignments(service, course_id):
         assgn_dict[work['id']] = sanitize_name( work['title'])
         print(f"{work['id']} - {work['title']}")
     return assgn_dict
+
 def download_file(drive_service, creds, file_id, save_path):
     try:
-        # Ask Drive API for webContentLink (direct download link)
-        meta = drive_service.files().get(fileId=file_id, fields="webContentLink").execute()
-        download_url = meta.get("webContentLink")
+        request = drive_service.files().get_media(fileId=file_id)
+        fh = io.FileIO(save_path, 'wb')
+        downloader = MediaIoBaseDownload(fh, request)
 
-        if not download_url:
-            print(f"  ⚠️ No direct download link for {file_id}")
-            return
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+            if status:
+                print(f"  ⬇️ Downloading {os.path.basename(save_path)} ({int(status.progress() * 100)}%)")
 
-        headers = {"Authorization": f"Bearer {creds.token}"}
-        response = requests.get(download_url, headers=headers)
-
-        if response.status_code == 200:
-            with open(save_path, "wb") as f:
-                f.write(response.content)
-            print(f"  ✓ Saved: {os.path.basename(save_path)}")
-        else:
-            print(f"  ✗ Failed to download {file_id} - HTTP {response.status_code}")
+        fh.close()
+        print(f"  ✅ Saved: {os.path.basename(save_path)}")
 
     except Exception as e:
         print(f"  ⚠️ Error downloading file {file_id}: {e}")
