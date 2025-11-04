@@ -59,7 +59,7 @@ Step 3. Create OAuth Client ID Credentials
 1. In APIs & Services → Credentials, click Create Credentials → OAuth client ID.
 2. Choose “Desktop App” as the application type.
 3. Download the credentials file — it will be named something like:
-   credentials.json
+   classroom_credentials.json
 4. Place this file in your project folder, and rename it to:
    classroom_credentials.json
 
@@ -67,7 +67,7 @@ Step 3. Create OAuth Client ID Credentials
 ## Running the Script
 
 Once everything is set up, run the script:
-python classroom_downloader.py
+python download_student_submission.py
 
 What the script does:
 1. Lists all available Google Classroom courses.
