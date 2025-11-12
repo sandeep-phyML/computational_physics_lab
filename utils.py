@@ -175,3 +175,38 @@ def Predictor_corrector(a,b,h,f,y_a):
         if x_s[-1] >= b:
             break
     return x_s ,y_s
+
+# -------------------- Assignment - 16 --------------------------- 
+
+def LagrangeInterpolation(x_list,y_list,x_in):
+    n = len(x_list)
+    y_pred = 0
+    for i in range(n):
+        prod_k = 1.0
+        for k in range(n):
+            if i != k :
+                prod_k *=  (x_in-x_list[k])/(x_list[i]-x_list[k])
+        y_pred += y_list[i] * prod_k
+    return y_pred
+
+def LinearSquareFit(x_list,y_list,sigma_i = None):
+    " y = a1 + a2x"
+    a = 0.0
+    b =  0.0
+    n = len(x_list)
+    if sigma_i == None:
+        sigma_i = []
+        for i in range(n):
+            sigma_i.append(1.0)
+    S = sum([1.0/sigma_i[i]**2 for i in range(n)])
+    S_xx = sum([x_list[i]**2/sigma_i[i]**2 for i in range(n)])
+    S_yy = sum([y_list[i]**2/sigma_i[i]**2 for i in range(n)])
+    S_x = sum([x_list[i]/sigma_i[i]**2 for i in range(n)])
+    S_y = sum([y_list[i]/sigma_i[i]**2 for i in range(n)])
+    S_xy = sum([x_list[i]*y_list[i]/sigma_i[i]**2 for i in range(n)])
+    Delta = S*S_xx - S_x**2
+    a1 = (S_xx*S_y-S_x*S_xy)/Delta 
+    a2 = (S_xy*S-S_x*S_y)/Delta
+    r_square =S_xy**2 / ( S_xx * S_yy )
+    return a1, a2 ,  r_square
+
